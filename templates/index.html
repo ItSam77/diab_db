@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Prediction App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 5px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 15px 20px;
+            background: transparent;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: #667eea;
+            color: white;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-group input, .form-group select {
+            padding: 12px 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #667eea;
+        }
+
+        .result-card.high-risk {
+            border-left-color: #e74c3c;
+            background: #fdf2f2;
+        }
+
+        .result-card.low-risk {
+            border-left-color: #27ae60;
+            background: #f2fdf7;
+        }
+
+        .result-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .result-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .result-item {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .result-item label {
+            font-weight: 600;
+            color: #666;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .result-item value {
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .probability-bar {
+            width: 100%;
+            height: 20px;
+            background: #e1e5e9;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #27ae60, #f39c12, #e74c3c);
+            transition: width 0.5s ease;
+        }
+
+        .records-section {
+            margin-top: 30px;
+        }
+
+        .records-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .records-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .records-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .records-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .select-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .select-btn:hover {
+            background: #219a52;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .tab-button {
+                margin-bottom: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🩺 Diabetes Prediction System</h1>
+            <p>Advanced AI-powered diabetes risk assessment tool</p>
+        </div>
+
+        <div class="main-content">
+            <!-- Tab Navigation -->
+            <div class="tabs">
+                <button class="tab-button active" onclick="switchTab('manual')">
+                    📝 Manual Input
+                </button>
+                <button class="tab-button" onclick="switchTab('sql')">
+                    🗃️ SQL Database
+                </button>
+            </div>
+
+            <!-- Manual Input Tab -->
+            <div id="manual-tab" class="tab-content active">
+                <h2>Enter Patient Information Manually</h2>
+                <form id="manual-form">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="pregnancies">Pregnancies</label>
+                            <input type="number" id="pregnancies" name="pregnancies" min="0" max="20" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="glucose">Glucose Level (mg/dL)</label>
+                            <input type="number" id="glucose" name="glucose" min="0" max="300" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="blood_pressure">Blood Pressure (mmHg)</label>
+                            <input type="number" id="blood_pressure" name="blood_pressure" min="0" max="200" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="skin_thickness">Skin Thickness (mm)</label>
+                            <input type="number" id="skin_thickness" name="skin_thickness" min="0" max="100" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="insulin">Insulin Level (μU/mL)</label>
+                            <input type="number" id="insulin" name="insulin" min="0" max="1000" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="bmi">BMI (Body Mass Index)</label>
+                            <input type="number" id="bmi" name="bmi" min="0" max="70" step="0.1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="diabetes_pedigree">Diabetes Pedigree Function</label>
+                            <input type="number" id="diabetes_pedigree" name="diabetes_pedigree" min="0" max="3" step="0.001" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="age">Age (years)</label>
+                            <input type="number" id="age" name="age" min="18" max="120" step="1" required>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn">🔍 Predict Diabetes Risk</button>
+                </form>
+            </div>
+
+            <!-- SQL Database Tab -->
+            <div id="sql-tab" class="tab-content">
+                <h2>Select Patient from Database</h2>
+                
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-secondary" onclick="loadSampleData()">
+                        📥 Load Sample Data
+                    </button>
+                    <button class="btn" onclick="loadRecords()">
+                        🔄 Refresh Records
+                    </button>
+                </div>
+
+                <form id="sql-form" style="margin-bottom: 20px;">
+                    <div class="form-group" style="max-width: 400px;">
+                        <label for="record_id">Patient Record ID</label>
+                        <input type="text" id="record_id" name="record_id" placeholder="Enter or select record ID" required>
+                    </div>
+                    <button type="submit" class="btn">🔍 Predict from Database</button>
+                </form>
+
+                <div class="records-section">
+                    <h3>Available Patient Records</h3>
+                    <div id="records-container">
+                        <p>Click "Load Sample Data" or "Refresh Records" to view available patients.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Processing prediction...</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="results" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tab buttons
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Manual form submission
+        document.getElementById('manual-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            showLoading();
+            hideResults();
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/manual_inference', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    showResults(data.result);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error: ' + error.message);
+            }
+        });
+
+        // SQL form submission
+        document.getElementById('sql-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            showLoading();
+            hideResults();
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/sql_inference', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                
+                if (data.success) {
+                    showResults(data.result);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                hideLoading();
+                showError('Network error: ' + error.message);
+            }
+        });
+
+        // Load sample data
+        async function loadSampleData() {
+            try {
+                const response = await fetch('/load_sample_data', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    loadRecords(); // Automatically refresh records
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        // Load records from database
+        async function loadRecords() {
+            try {
+                const response = await fetch('/get_records');
+                const data = await response.json();
+                
+                if (data.success) {
+                    displayRecords(data.records);
+                } else {
+                    showError(data.error);
+                }
+            } catch (error) {
+                showError('Network error: ' + error.message);
+            }
+        }
+
+        // Display records in table
+        function displayRecords(records) {
+            const container = document.getElementById('records-container');
+            
+            if (records.length === 0) {
+                container.innerHTML = '<p>No records found. Load sample data first.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="records-table">
+                    <thead>
+                        <tr>
+                            <th>Action</th>
+                            <th>ID</th>
+                            <th>Pregnancies</th>
+                            <th>Glucose</th>
+                            <th>BP</th>
+                            <th>BMI</th>
+                            <th>Age</th>
+                            <th>Outcome</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            records.forEach(record => {
+                html += `
+                    <tr>
+                        <td>
+                            <button class="select-btn" onclick="selectRecord('${record.id}')">
+                                Select
+                            </button>
+                        </td>
+                        <td title="${record.id}">${record.id.substring(0, 8)}...</td>
+                        <td>${record.pregnancies}</td>
+                        <td>${record.glucose}</td>
+                        <td>${record.blood_pressure}</td>
+                        <td>${record.bmi}</td>
+                        <td>${record.age}</td>
+                        <td>${record.outcome !== null ? (record.outcome === 1 ? '✅ Diabetic' : '❌ Non-diabetic') : '❓ Unknown'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // Select record for prediction
+        function selectRecord(recordId) {
+            document.getElementById('record_id').value = recordId;
+        }
+
+        // Show results
+        function showResults(result) {
+            const resultsDiv = document.getElementById('results');
+            const riskClass = result.risk_level === 'High' ? 'high-risk' : 'low-risk';
+            const riskIcon = result.risk_level === 'High' ? '⚠️' : '✅';
+            
+            resultsDiv.innerHTML = `
+                <div class="result-card ${riskClass}">
+                    <div class="result-title">
+                        ${riskIcon} Prediction Results - ${result.risk_level} Risk
+                    </div>
+                    
+                    <div class="result-details">
+                        <div class="result-item">
+                            <label>Risk Level:</label>
+                            <value style="color: ${result.risk_level === 'High' ? '#e74c3c' : '#27ae60'}; font-weight: bold;">
+                                ${result.risk_level} Risk
+                            </value>
+                        </div>
+                        
+                        <div class="result-item">
+                            <label>Probability:</label>
+                            <value>${(result.probability * 100).toFixed(2)}%</value>
+                            <div class="probability-bar">
+                                <div class="probability-fill" style="width: ${result.probability * 100}%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="result-item">
+                            <label>Prediction:</label>
+                            <value>${result.prediction === 1 ? 'Diabetic' : 'Non-diabetic'}</value>
+                        </div>
+                        
+                        <div class="result-item">
+                            <label>Method:</label>
+                            <value>${result.method}</value>
+                        </div>
+                        
+                        ${result.record_id ? `
+                        <div class="result-item">
+                            <label>Record ID:</label>
+                            <value>${result.record_id}</value>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h4>Input Data Used:</h4>
+                        <div class="result-details">
+                            <div class="result-item">
+                                <label>Pregnancies:</label>
+                                <value>${result.input_data.pregnancies}</value>
+                            </div>
+                            <div class="result-item">
+                                <label>Glucose:</label>
+                                <value>${result.input_data.glucose} mg/dL</value>
+                            </div>
+                            <div class="result-item">
+                                <label>Blood Pressure:</label>
+                                <value>${result.input_data.blood_pressure} mmHg</value>
+                            </div>
+                            <div class="result-item">
+                                <label>Skin Thickness:</label>
+                                <value>${result.input_data.skin_thickness} mm</value>
+                            </div>
+                            <div class="result-item">
+                                <label>Insulin:</label>
+                                <value>${result.input_data.insulin} μU/mL</value>
+                            </div>
+                            <div class="result-item">
+                                <label>BMI:</label>
+                                <value>${result.input_data.bmi}</value>
+                            </div>
+                            <div class="result-item">
+                                <label>Diabetes Pedigree:</label>
+                                <value>${result.input_data.diabetes_pedigree}</value>
+                            </div>
+                            <div class="result-item">
+                                <label>Age:</label>
+                                <value>${result.input_data.age} years</value>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function hideResults() {
+            document.getElementById('results').style.display = 'none';
+        }
+
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            
+            document.querySelector('.main-content').insertBefore(alertDiv, document.querySelector('.tabs'));
+            
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 5000);
+        }
+
+        function showError(message) {
+            showAlert('Error: ' + message, 'error');
+        }
+
+        // Load records on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadRecords();
+        });
+    </script>
+</body>
+</html>
